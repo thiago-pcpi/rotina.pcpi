@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCPI — Registro de Rotina</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mat: #2B6CB0;
+    --mat-light: #EBF4FF;
+    --mat-dark: #1A4A7A;
+    --ves: #B7791F;
+    --ves-light: #FFFBEB;
+    --ves-dark: #92600A;
+    --not: #6B46C1;
+    --not-light: #F3EEFF;
+    --not-dark: #4A2D8A;
+    --base: #F7F8FA;
+    --surface: #FFFFFF;
+    --border: #E2E8F0;
+    --text: #1A202C;
+    --text-muted: #718096;
+    --success: #276749;
+    --danger: #C53030;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+    --turno-color: var(--mat);
+    --turno-light: var(--mat-light);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--base);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+    color: var(--text);
+  }
+  .app-header .escola-tag {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .btn-config {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+  }
+  .btn-config:hover { background: var(--base); }
+
+  /* ── Turno selector strip ── */
+  .turno-strip {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .turno-btn {
+    flex: 1;
+    padding: 7px 4px;
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    text-align: center;
+  }
+  .turno-btn.mat { background: var(--mat-light); color: var(--mat-dark); border-color: transparent; }
+  .turno-btn.ves { background: var(--ves-light); color: var(--ves-dark); border-color: transparent; }
+  .turno-btn.not { background: var(--not-light); color: var(--not-dark); border-color: transparent; }
+  .turno-btn.mat.active { border-color: var(--mat); }
+  .turno-btn.ves.active { border-color: var(--ves); }
+  .turno-btn.not.active { border-color: var(--not); }
+
+  /* ── Date bar ── */
+  .date-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .date-bar input[type="date"] {
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .date-bar .date-nav { display: flex; gap: 4px; }
+  .date-nav button {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .date-nav button:hover { background: var(--base); }
+
+  /* ── Content scroll area ── */
+  .content { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+
+  /* ── Section heading ── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 16px 20px 8px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  /* ── Quick-add categories ── */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px 4px;
+  }
+  .cat-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all .12s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cat-btn:active { transform: scale(.97); }
+  .cat-btn .cat-icon { font-size: 22px; }
+  .cat-btn .cat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .cat-btn:hover { border-color: var(--turno-color, var(--mat)); }
+
+  .cat-btn.wide {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  .cat-btn.wide .cat-icon { font-size: 20px; }
+
+  /* ── Voice input ── */
+  .voice-bar {
+    margin: 12px 20px 0;
+    display: flex;
+    gap: 10px;
+  }
+  .voice-bar textarea {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    min-height: 70px;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color .12s;
+  }
+  .voice-bar textarea:focus { outline: none; border-color: var(--mat); }
+  .voice-bar .voice-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .btn-voice {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .12s;
+  }
+  .btn-voice.active { background: #FEE2E2; border-color: #FC8181; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+  .btn-send {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    border: none;
+    background: var(--mat);
+    color: #fff;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .12s;
+  }
+  .btn-send:hover { background: var(--mat-dark); }
+  .btn-send:disabled { background: var(--border); cursor: not-allowed; }
+
+  /* ── Form modal overlay ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: var(--surface);
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    transform: translateY(100%);
+    transition: transform .25s cubic-bezier(.32,.72,0,1);
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color .12s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { outline: none; border-color: var(--mat); }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 4px; }
+  .btn-primary {
+    flex: 1;
+    padding: 13px;
+    background: var(--mat);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .btn-primary:hover { background: var(--mat-dark); }
+  .btn-secondary {
+    padding: 13px 18px;
+    background: var(--base);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* ── Entries list ── */
+  .entries-list { padding: 0 20px; }
+  .entry-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 13px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    position: relative;
+  }
+  .entry-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .entry-dot.mat { background: var(--mat); }
+  .entry-dot.ves { background: var(--ves); }
+  .entry-dot.not { background: var(--not); }
+  .entry-body { flex: 1; }
+  .entry-cat {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin-bottom: 2px;
+  }
+  .entry-text { font-size: 13px; line-height: 1.45; }
+  .entry-del {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 4px;
+    opacity: .4;
+    transition: opacity .12s;
+  }
+  .entry-del:hover { opacity: 1; color: var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 32px 20px;
+    font-size: 14px;
+  }
+  .empty-state span { display: block; font-size: 32px; margin-bottom: 8px; }
+
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 0 12px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: color .12s;
+  }
+  .nav-item.active { color: var(--mat); }
+  .nav-icon { font-size: 20px; }
+
+  /* ── Views ── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── Relatório view ── */
+  .report-area {
+    padding: 16px 20px;
+  }
+  .report-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .report-block-header {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #fff;
+  }
+  .report-block-header.mat { background: var(--mat); }
+  .report-block-header.ves { background: var(--ves); }
+  .report-block-header.not { background: var(--not); }
+  .report-block-body { padding: 12px 14px; }
+  .report-entry { font-size: 13px; margin-bottom: 4px; }
+  .report-entry::before { content: "• "; }
+
+  .report-month-selector {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .report-month-selector select {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--text);
+  }
+  .btn-export {
+    padding: 9px 16px;
+    background: var(--mat);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* ── Config view ── */
+  .config-area { padding: 16px 20px; }
+  .config-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .config-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    padding: 10px 14px 6px;
+    border-bottom: 1px solid var(--border);
+    background: var(--base);
+  }
+  .config-row {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .config-row:last-child { border-bottom: none; }
+  .config-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .config-row input, .config-row select, .config-row textarea {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--text);
+    width: 100%;
+  }
+  .config-row input:focus, .config-row select:focus, .config-row textarea:focus {
+    outline: none; border-color: var(--mat);
+  }
+  .config-row textarea { min-height: 60px; resize: vertical; }
+  .btn-save-config {
+    width: 100%;
+    padding: 13px;
+    background: var(--mat);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+  }
+
+  /* ── Dimensões view ── */
+  .dim-grid { padding: 12px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .dim-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .dim-icon { font-size: 20px; }
+  .dim-title { font-size: 14px; font-weight: 700; }
+  .dim-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+  .dim-count {
+    display: inline-block;
+    background: var(--mat-light);
+    color: var(--mat-dark);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 6px;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 88px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1A202C;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all .25s;
+    white-space: nowrap;
+    z-index: 300;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Contatos PCPIs ── */
+  .contatos-area { padding: 16px 20px; }
+  .contato-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+  .contato-nome { font-size: 14px; font-weight: 700; }
+  .contato-escola { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .contato-links { display: flex; gap: 8px; flex-wrap: wrap; }
+  .contato-link {
+    font-size: 12px;
+    color: var(--mat);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 4px 10px;
+    border: 1px solid var(--mat-light);
+    border-radius: 20px;
+    background: var(--mat-light);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  .tabs-secondary {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+  }
+  .tab-sec {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .tab-sec.active { color: var(--mat); border-bottom-color: var(--mat); }
+
+  .subview { display: none; }
+  .subview.active { display: block; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <h1>Rotina PCPI</h1>
+    <div class="escola-tag" id="headerEscola">EEJM — Campo Grande/MS</div>
+  </div>
+  <button class="btn-config" onclick="showNav('config')" title="Configurações">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </button>
+</header>
+
+<!-- ── VIEWS ── -->
+
+<!-- VIEW: Lançamento -->
+<div id="view-lancar" class="view active content">
+  <div class="turno-strip">
+    <button class="turno-btn mat active" onclick="setTurno('mat',this)">☀️ Matutino</button>
+    <button class="turno-btn ves" onclick="setTurno('ves',this)">🌤 Vespertino</button>
+    <button class="turno-btn not" onclick="setTurno('not',this)">🌙 Noturno</button>
+  </div>
+  <div class="date-bar">
+    <input type="date" id="dateInput" onchange="loadEntries()">
+    <div class="date-nav">
+      <button onclick="shiftDate(-1)">‹</button>
+      <button onclick="shiftDate(1)">›</button>
+    </div>
+  </div>
+
+  <div class="section-title">Lançamento rápido</div>
+  <div class="cat-grid">
+    <button class="cat-btn" onclick="openModal('professor')">
+      <span class="cat-icon">👩‍🏫</span>
+      <span class="cat-label">Atendimento a professor</span>
+    </button>
+    <button class="cat-btn" onclick="openModal('ste')">
+      <span class="cat-icon">🖥</span>
+      <span class="cat-label">Disponibilização da STE</span>
+    </button>
+    <button class="cat-btn" onclick="openModal('equipamento')">
+      <span class="cat-icon">📦</span>
+      <span class="cat-label">Entrega / recebimento de equipamento</span>
+    </button>
+    <button class="cat-btn" onclick="openModal('estudo')">
+      <span class="cat-icon">📚</span>
+      <span class="cat-label">Momento de estudo</span>
+    </button>
+    <button class="cat-btn" onclick="openModal('colaborativa')">
+      <span class="cat-icon">🤝</span>
+      <span class="cat-label">Ação colaborativa / gestão</span>
+    </button>
+    <button class="cat-btn" onclick="openModal('projeto')">
+      <span class="cat-icon">🔬</span>
+      <span class="cat-label">Projeto / iniciativa científica</span>
+    </button>
+    <button class="cat-btn wide" onclick="openModal('reuniao')">
+      <span class="cat-icon">💬</span>
+      <span class="cat-label">Reunião / conselho de classe</span>
+    </button>
+    <button class="cat-btn wide" onclick="openModal('livre')">
+      <span class="cat-icon">✏️</span>
+      <span class="cat-label">Entrada livre</span>
+    </button>
+  </div>
+
+  <div class="section-title">Ou escreva / use a voz</div>
+  <div class="voice-bar">
+    <textarea id="freeInput" placeholder="Descreva a ação brevemente. O app vai formatar no padrão SGDE." rows="3"></textarea>
+    <div class="voice-actions">
+      <button class="btn-voice" id="btnVoice" onclick="toggleVoice()" title="Gravar voz">🎙</button>
+      <button class="btn-send" onclick="addFreeEntry()" title="Adicionar">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:8px">Registros do dia</div>
+  <div class="entries-list" id="entriesList"></div>
+</div>
+
+<!-- VIEW: Relatório -->
+<div id="view-relatorio" class="view">
+  <div class="report-month-selector">
+    <select id="reportMonth" onchange="renderReport()"></select>
+    <button class="btn-export" onclick="exportXLSX()">⬇ Exportar XLSX</button>
+  </div>
+  <div class="report-area" id="reportArea"></div>
+</div>
+
+<!-- VIEW: Dimensões PCPI -->
+<div id="view-dimensoes" class="view content">
+  <div class="tabs-secondary">
+    <button class="tab-sec active" onclick="showSubview('sv-dims', this)">Dimensões</button>
+    <button class="tab-sec" onclick="showSubview('sv-contatos', this)">Contatos PCPIs</button>
+    <button class="tab-sec" onclick="showSubview('sv-edital', this)">Função PCPI</button>
+  </div>
+
+  <div id="sv-dims" class="subview active">
+    <div class="dim-grid" id="dimGrid"></div>
+  </div>
+
+  <div id="sv-contatos" class="subview">
+    <div class="contatos-area" id="contatosArea">
+      <div class="section-title" style="padding-left:0">Rede de PCPIs</div>
+      <div id="contatosList"></div>
+      <button class="cat-btn wide" style="margin-top:8px" onclick="openModal('contato')">
+        <span class="cat-icon">➕</span>
+        <span class="cat-label">Adicionar colega PCPI</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="sv-edital" class="subview">
+    <div style="padding:16px 20px;">
+      <div class="config-section">
+        <div class="config-section-title">Resolução SED n. 4.503 / 2026</div>
+        <div style="padding:14px;font-size:13px;line-height:1.6;color:var(--text-muted)">
+          <p style="margin-bottom:10px">Aprovada em 9 de janeiro de 2026. Define as atribuições do PCPI na Rede Estadual de Ensino de MS.</p>
+          <p style="margin-bottom:6px;font-weight:600;color:var(--text)">Competências principais:</p>
+          <ul style="list-style:disc;padding-left:16px;display:flex;flex-direction:column;gap:5px">
+            <li>Participar e aplicar formações continuadas (COTED/SED)</li>
+            <li>Orientar e auxiliar professores no planejamento inovador</li>
+            <li>Gerenciar agendamentos de recursos tecnológicos e espaços</li>
+            <li>Disponibilizar e zelar pelos recursos da STE, Laboratórios, Kit de Robótica e LDM</li>
+            <li>Fomentar projetos de iniciação científica e clubes de ciências</li>
+            <li>Divulgar práticas exitosas por publicações e redes sociais</li>
+            <li>Elaborar Plano de Ação e registrar rotinas diárias no SGDE</li>
+            <li>Participar de reuniões virtuais/presenciais (COTED/CRE)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="config-section" style="margin-top:0">
+        <div class="config-section-title">Orientações SGDE — COTED/SITEC</div>
+        <div style="padding:14px;font-size:13px;line-height:1.6;color:var(--text-muted);display:flex;flex-direction:column;gap:8px">
+          <p>✅ Registrar as <strong>ações do PCPI</strong>, não as do professor regente.</p>
+          <p>✅ Iniciar entradas com <strong>substantivo</strong>: Auxílio, Disponibilização, Elaboração, Participação…</p>
+          <p>✅ Atividades técnicas frequentes (STE, BOB) devem ser <strong>agrupadas</strong> por turno.</p>
+          <p>✅ Registros devem cobrir <strong>toda a carga horária</strong> do turno (não só 1 ação para 4h).</p>
+          <p>✅ Evitar CAIXA ALTA. Usar norma-padrão da Língua Portuguesa.</p>
+          <p>✅ Atividades colaborativas/urgentes da gestão devem ter <strong>caráter eventual</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW: Configurações -->
+<div id="view-config" class="view content">
+  <div class="config-area">
+    <div class="config-section">
+      <div class="config-section-title">Identificação</div>
+      <div class="config-row"><label>Nome completo</label><input id="cfgNome" type="text" placeholder="Thiago Vareiro Valério"></div>
+      <div class="config-row"><label>Escola</label><input id="cfgEscola" type="text" placeholder="Escola Estadual Joaquim Murtinho"></div>
+      <div class="config-row"><label>Município / CRE</label><input id="cfgMunicipio" type="text" placeholder="Campo Grande — CRE 02"></div>
+      <div class="config-row"><label>Coordenadora responsável</label><input id="cfgCoordenadora" type="text" placeholder="Nome da coordenadora"></div>
+    </div>
+
+    <div class="config-section">
+      <div class="config-section-title">Cursos online em andamento</div>
+      <div class="config-row">
+        <label>Cursos (um por linha)</label>
+        <textarea id="cfgCursos" rows="5" placeholder="Reoferta — Escola como Espaço de Inovação (AVA Saber/SED-MS)&#10;Formação Continuada IA na Educação Básica (AVA Saber/SED-MS)&#10;Trilha Formativa Grêmio Estudantil (AVA Aprender/SED-MS)&#10;Educação Híbrida para docentes da REE/MS (AVA RIEH/MEC-NEES-UFAL)&#10;Liderança em IA na Gestão Pública — FGV (Apolitical)&#10;Engenharia de Prompts Eficaz (Apolitical)"></textarea>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <div class="config-section-title">Contatos SED</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text-muted);line-height:1.7">
+        <p><strong>SITEC:</strong> sitec@sed.ms.gov.br | (67) 3318-2250</p>
+        <p><strong>COTED:</strong> coted@sed.ms.gov.br | (67) 3318-2285 ou 3318-2301</p>
+        <p><strong>CRE 02 — Campo Grande:</strong> cre-metropolitana@sed.ms.gov.br | (67) 3357-2302</p>
+      </div>
+    </div>
+
+    <button class="btn-save-config" onclick="saveConfig()">Salvar configurações</button>
+  </div>
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-lancar" onclick="showNav('lancar')">
+    <span class="nav-icon">✏️</span>Lançar
+  </button>
+  <button class="nav-item" id="nav-relatorio" onclick="showNav('relatorio')">
+    <span class="nav-icon">📄</span>Relatório
+  </button>
+  <button class="nav-item" id="nav-dimensoes" onclick="showNav('dimensoes')">
+    <span class="nav-icon">🧩</span>Dimensões
+  </button>
+  <button class="nav-item" id="nav-config" onclick="showNav('config')">
+    <span class="nav-icon">⚙️</span>Config
+  </button>
+</nav>
+
+<!-- ── MODAL SHEET ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBg(event)">
+  <div class="modal-sheet" id="modalSheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Lançamento</div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+let currentTurno = 'mat';
+let recognition = null;
+let isRecording = false;
+
+const DIMENSOES = [
+  { icon: '👩‍🏫', title: 'Formação e orientação a professores', desc: 'Auxílio, atendimento, orientação e disponibilização de recursos pedagógicos ao corpo docente. Inclui tutoriais, workshops e indicação de metodologias.', key: 'professor' },
+  { icon: '🖥', title: 'Gestão dos recursos tecnológicos', desc: 'Agendamento, entrega/recebimento, disponibilização e zeladoria dos equipamentos da STE, Laboratório, BOBs, LDM e Kit de Robótica.', key: 'ste' },
+  { icon: '🔬', title: 'Projetos e iniciação científica', desc: 'Fomento e acompanhamento de projetos de iniciação científica, clubes de ciências, leitura e robótica.', key: 'projeto' },
+  { icon: '📚', title: 'Formação continuada própria', desc: 'Participação em cursos, trilhas formativas, workshops e reuniões da COTED, SITEC, CRE e plataformas como AVA Saber, Apolitical e RIEH.', key: 'estudo' },
+  { icon: '🤝', title: 'Ações colaborativas e de gestão', desc: 'Apoio eventual à coordenação e direção em demandas fora da rotina: conselho de classe, eventos, organização e distribuição de materiais.', key: 'colaborativa' },
+  { icon: '📢', title: 'Divulgação de práticas exitosas', desc: 'Publicação de ações e resultados em sites, redes sociais e eventos de iniciação científica regionais, nacionais ou internacionais.', key: 'divulgacao' },
+];
+
+// ── Storage ──
+function getEntries() {
+  try { return JSON.parse(localStorage.getItem('pcpi_entries') || '{}'); } catch { return {}; }
+}
+function saveEntries(data) {
+  try { localStorage.setItem('pcpi_entries', JSON.stringify(data)); } catch {}
+}
+function getCfg() {
+  try { return JSON.parse(localStorage.getItem('pcpi_cfg') || '{}'); } catch { return {}; }
+}
+function saveCfg(data) {
+  try { localStorage.setItem('pcpi_cfg', JSON.stringify(data)); } catch {}
+}
+function getContatos() {
+  try { return JSON.parse(localStorage.getItem('pcpi_contatos') || '[]'); } catch { return []; }
+}
+function saveContatos(data) {
+  try { localStorage.setItem('pcpi_contatos', JSON.stringify(data)); } catch {}
+}
+
+// ── Date helpers ──
+function todayStr() {
+  return new Date().toISOString().slice(0,10);
+}
+function formatDateBR(isoStr) {
+  const [y,m,d] = isoStr.split('-');
+  const dias = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const dt = new Date(y, m-1, d);
+  return `${d}/${m}/${y} — ${dias[dt.getDay()]}`;
+}
+function shiftDate(n) {
+  const inp = document.getElementById('dateInput');
+  const d = new Date(inp.value + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  inp.value = d.toISOString().slice(0,10);
+  loadEntries();
+}
+
+// ── Turno ──
+function setTurno(turno, btn) {
+  currentTurno = turno;
+  document.querySelectorAll('.turno-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── Entries ──
+function loadEntries() {
+  const date = document.getElementById('dateInput').value;
+  const all = getEntries();
+  const dayEntries = all[date] || [];
+  const list = document.getElementById('entriesList');
+
+  if (dayEntries.length === 0) {
+    list.innerHTML = '<div class="empty-state"><span>📋</span>Nenhum registro para este dia.</div>';
+    return;
+  }
+
+  list.innerHTML = dayEntries.map((e, i) => `
+    <div class="entry-card">
+      <div class="entry-dot ${e.turno}"></div>
+      <div class="entry-body">
+        <div class="entry-cat">${turnoLabel(e.turno)} · ${catLabel(e.cat)}</div>
+        <div class="entry-text">${escHtml(e.text)}</div>
+      </div>
+      <button class="entry-del" onclick="deleteEntry('${date}',${i})" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+function deleteEntry(date, idx) {
+  const all = getEntries();
+  if (!all[date]) return;
+  all[date].splice(idx, 1);
+  if (all[date].length === 0) delete all[date];
+  saveEntries(all);
+  loadEntries();
+  showToast('Registro removido');
+}
+
+function addEntry(text, cat) {
+  if (!text.trim()) return;
+  const date = document.getElementById('dateInput').value;
+  const all = getEntries();
+  if (!all[date]) all[date] = [];
+  all[date].push({ turno: currentTurno, cat: cat || 'livre', text: text.trim() });
+  saveEntries(all);
+  loadEntries();
+  showToast('Registrado ✓');
+}
+
+function addFreeEntry() {
+  const ta = document.getElementById('freeInput');
+  if (!ta.value.trim()) return;
+  addEntry(ta.value, 'livre');
+  ta.value = '';
+}
+
+// ── Modal forms ──
+const MODAL_FORMS = {
+  professor: {
+    title: '👩‍🏫 Atendimento a professor',
+    build: () => {
+      const cfg = getCfg();
+      const cursos = (cfg.cursos || '').split('\n').filter(Boolean);
+      return `
+        <div class="form-group"><label>Professor(a)</label><input id="mf_prof" type="text" placeholder="Nome, componente curricular"></div>
+        <div class="form-group"><label>Ação realizada</label>
+          <select id="mf_acao">
+            <option value="">Selecione...</option>
+            <option>Auxílio no uso de recurso tecnológico</option>
+            <option>Orientação sobre metodologia inovadora</option>
+            <option>Disponibilização de tutorial ou recurso digital</option>
+            <option>Elaboração conjunta de atividade/prova</option>
+            <option>Apresentação de ferramenta pedagógica</option>
+            <option>Acompanhamento de aula com tecnologia</option>
+            <option>Outra</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Complemento (opcional)</label><textarea id="mf_comp" placeholder="Turma, plataforma, detalhes..."></textarea></div>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button class="btn-primary" onclick="submitProf()">Registrar</button>
+        </div>`;
+    }
+  },
+  ste: {
+    title: '🖥 Disponibilização da STE',
+    build: () => `
+      <div class="form-group"><label>Professor(a)</label><input id="mf_prof" type="text" placeholder="Nome, componente curricular"></div>
+      <div class="form-group"><label>Turma(s)</label><input id="mf_turma" type="text" placeholder="Ex.: 2A, 3B"></div>
+      <div class="form-group"><label>Tempos</label><input id="mf_tempos" type="text" placeholder="Ex.: 1º e 2º Tempos"></div>
+      <div class="form-group"><label>Ferramentas utilizadas (opcional)</label><input id="mf_tools" type="text" placeholder="Google Forms, Planilhas, etc."></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitSTE()">Registrar</button>
+      </div>`
+  },
+  equipamento: {
+    title: '📦 Entrega / recebimento de equipamento',
+    build: () => `
+      <div class="form-group"><label>Equipamento</label>
+        <select id="mf_equip">
+          <option>Projetor multimídia (data show)</option>
+          <option>Notebook</option>
+          <option>Kit robótica educacional</option>
+          <option>LDM — Laboratório Didático Móvel</option>
+          <option>Caixa de som</option>
+          <option>Câmera</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Professor(a)</label><input id="mf_prof" type="text" placeholder="Nome, componente curricular, turma"></div>
+      <div class="form-group"><label>Observação (opcional)</label><input id="mf_obs" type="text" placeholder="BOB nº, sala, etc."></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitEquip()">Registrar</button>
+      </div>`
+  },
+  estudo: {
+    title: '📚 Momento de estudo',
+    build: () => {
+      const cfg = getCfg();
+      const cursos = (cfg.cursos || 'Reoferta — Escola como Espaço de Inovação (AVA Saber/SED-MS)\nFormação Continuada IA na Educação Básica (AVA Saber/SED-MS)\nTrilha Formativa Grêmio Estudantil (AVA Aprender/SED-MS)\nEducação Híbrida para docentes da REE/MS (AVA RIEH/MEC-NEES-UFAL)\nLiderança em IA na Gestão Pública — FGV (Apolitical)\nEngenharia de Prompts Eficaz (Apolitical)').split('\n').filter(Boolean);
+      const opts = cursos.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+      return `
+        <div class="form-group"><label>Curso / formação</label>
+          <select id="mf_curso"><option value="">Selecione...</option>${opts}<option value="outro">Outro...</option></select>
+        </div>
+        <div class="form-group" id="mf_outro_wrap" style="display:none"><label>Especifique</label><input id="mf_outro" type="text"></div>
+        <div class="form-group"><label>Atividade realizada (opcional)</label>
+          <select id="mf_estudo_acao">
+            <option value="">Selecione ou descreva</option>
+            <option>leitura e realização de atividades do módulo em andamento</option>
+            <option>assistência a videoaula do módulo</option>
+            <option>elaboração de trabalho/atividade avaliativa do módulo</option>
+            <option>participação em encontro síncrono</option>
+            <option>participação em workshop</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button class="btn-primary" onclick="submitEstudo()">Registrar</button>
+        </div>`;
+    },
+    afterBuild: () => {
+      document.getElementById('mf_curso').addEventListener('change', function() {
+        document.getElementById('mf_outro_wrap').style.display = this.value === 'outro' ? 'block' : 'none';
+      });
+    }
+  },
+  colaborativa: {
+    title: '🤝 Ação colaborativa / gestão',
+    build: () => `
+      <div class="form-group"><label>Solicitada por</label>
+        <select id="mf_solicit">
+          <option>Direção escolar</option>
+          <option>Coordenação pedagógica</option>
+          <option>Secretaria escolar</option>
+          <option>COTED / CRE</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Descrição da ação</label><textarea id="mf_colab_desc" placeholder="Descreva a ação colaborativa realizada..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitColab()">Registrar</button>
+      </div>`
+  },
+  projeto: {
+    title: '🔬 Projeto / iniciativa científica',
+    build: () => `
+      <div class="form-group"><label>Projeto / clube</label><input id="mf_proj_nome" type="text" placeholder="Nome do projeto ou clube"></div>
+      <div class="form-group"><label>Ação realizada</label><textarea id="mf_proj_acao" placeholder="Fomento, acompanhamento, organização..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitProjeto()">Registrar</button>
+      </div>`
+  },
+  reuniao: {
+    title: '💬 Reunião / conselho de classe',
+    build: () => `
+      <div class="form-group"><label>Tipo</label>
+        <select id="mf_reun_tipo">
+          <option>Conselho de classe</option>
+          <option>Reunião pedagógica coletiva</option>
+          <option>Reunião virtual COTED</option>
+          <option>Reunião virtual CRE</option>
+          <option>Planejamento coletivo de área</option>
+          <option>Pré-conselho</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Contribuição do PCPI</label><textarea id="mf_reun_contrib" placeholder="Auxílio técnico, sugestão de práticas inovadoras, montagem de equipamento..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitReuniao()">Registrar</button>
+      </div>`
+  },
+  livre: {
+    title: '✏️ Entrada livre',
+    build: () => `
+      <div class="form-group"><label>Registro</label><textarea id="mf_livre" rows="5" placeholder="Descreva a ação no padrão SGDE (iniciar com substantivo: Auxílio, Elaboração, Disponibilização, Participação...)"></textarea></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitLivre()">Registrar</button>
+      </div>`
+  },
+  contato: {
+    title: '➕ Adicionar colega PCPI',
+    build: () => `
+      <div class="form-group"><label>Nome</label><input id="mf_ct_nome" type="text"></div>
+      <div class="form-group"><label>Escola</label><input id="mf_ct_escola" type="text"></div>
+      <div class="form-group"><label>Município</label><input id="mf_ct_mun" type="text"></div>
+      <div class="form-group"><label>WhatsApp / telefone (opcional)</label><input id="mf_ct_tel" type="tel"></div>
+      <div class="form-group"><label>E-mail (opcional)</label><input id="mf_ct_email" type="email"></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitContato()">Salvar</button>
+      </div>`
+  }
+};
+
+function openModal(key) {
+  const def = MODAL_FORMS[key];
+  if (!def) return;
+  document.getElementById('modalTitle').textContent = def.title;
+  document.getElementById('modalBody').innerHTML = def.build();
+  document.getElementById('modalOverlay').classList.add('open');
+  if (def.afterBuild) setTimeout(def.afterBuild, 50);
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOnBg(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+// ── Submit handlers ──
+function submitProf() {
+  const prof = document.getElementById('mf_prof').value.trim();
+  const acao = document.getElementById('mf_acao').value;
+  const comp = document.getElementById('mf_comp').value.trim();
+  if (!prof || !acao) { showToast('Preencha professor e ação'); return; }
+  const text = `${acao} ao(à) professor(a) ${prof}${comp ? ', ' + comp : ''}.`;
+  closeModal();
+  addEntry(text, 'professor');
+}
+function submitSTE() {
+  const prof = document.getElementById('mf_prof').value.trim();
+  const turma = document.getElementById('mf_turma').value.trim();
+  const tempos = document.getElementById('mf_tempos').value.trim();
+  const tools = document.getElementById('mf_tools').value.trim();
+  if (!prof) { showToast('Informe o professor'); return; }
+  let text = `Disponibilização da Sala de Tecnologia Educacional (STE) ao(à) professor(a) ${prof}`;
+  if (turma) text += `, turma(s) ${turma}`;
+  if (tempos) text += `, ${tempos}`;
+  if (tools) text += `, com uso de ${tools}`;
+  text += '.';
+  closeModal();
+  addEntry(text, 'ste');
+}
+function submitEquip() {
+  const equip = document.getElementById('mf_equip').value;
+  const prof = document.getElementById('mf_prof').value.trim();
+  const obs = document.getElementById('mf_obs').value.trim();
+  if (!prof) { showToast('Informe o professor'); return; }
+  let text = `Entrega e recebimento de ${equip} ao(à) professor(a) ${prof}`;
+  if (obs) text += ` (${obs})`;
+  text += '.';
+  closeModal();
+  addEntry(text, 'equipamento');
+}
+function submitEstudo() {
+  const sel = document.getElementById('mf_curso').value;
+  const outro = document.getElementById('mf_outro') ? document.getElementById('mf_outro').value.trim() : '';
+  const acao = document.getElementById('mf_estudo_acao').value;
+  const curso = sel === 'outro' ? outro : sel;
+  if (!curso) { showToast('Selecione o curso'); return; }
+  let text = `Momento de estudo: ${curso}`;
+  if (acao) text += `, com ${acao}`;
+  text += '.';
+  closeModal();
+  addEntry(text, 'estudo');
+}
+function submitColab() {
+  const solicit = document.getElementById('mf_solicit').value;
+  const desc = document.getElementById('mf_colab_desc').value.trim();
+  if (!desc) { showToast('Descreva a ação'); return; }
+  const text = `Colaboração com a ${solicit} — ${desc}.`;
+  closeModal();
+  addEntry(text, 'colaborativa');
+}
+function submitProjeto() {
+  const nome = document.getElementById('mf_proj_nome').value.trim();
+  const acao = document.getElementById('mf_proj_acao').value.trim();
+  if (!nome || !acao) { showToast('Preencha todos os campos'); return; }
+  const text = `${acao} — ${nome}.`;
+  closeModal();
+  addEntry(text, 'projeto');
+}
+function submitReuniao() {
+  const tipo = document.getElementById('mf_reun_tipo').value;
+  const contrib = document.getElementById('mf_reun_contrib').value.trim();
+  let text = `Participação no ${tipo}`;
+  if (contrib) text += ` — ${contrib}`;
+  text += '.';
+  closeModal();
+  addEntry(text, 'reuniao');
+}
+function submitLivre() {
+  const v = document.getElementById('mf_livre').value.trim();
+  if (!v) return;
+  closeModal();
+  addEntry(v, 'livre');
+}
+function submitContato() {
+  const nome = document.getElementById('mf_ct_nome').value.trim();
+  const escola = document.getElementById('mf_ct_escola').value.trim();
+  const mun = document.getElementById('mf_ct_mun').value.trim();
+  const tel = document.getElementById('mf_ct_tel').value.trim();
+  const email = document.getElementById('mf_ct_email').value.trim();
+  if (!nome || !escola) { showToast('Nome e escola são obrigatórios'); return; }
+  const contatos = getContatos();
+  contatos.push({ nome, escola, mun, tel, email });
+  saveContatos(contatos);
+  closeModal();
+  renderContatos();
+  showToast('Contato salvo');
+}
+
+// ── Voice ──
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast('Reconhecimento de voz não disponível neste browser'); return;
+  }
+  if (isRecording) {
+    if (recognition) recognition.stop();
+    isRecording = false;
+    document.getElementById('btnVoice').classList.remove('active');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'pt-BR';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.onresult = e => {
+    document.getElementById('freeInput').value = e.results[0][0].transcript;
+    isRecording = false;
+    document.getElementById('btnVoice').classList.remove('active');
+  };
+  recognition.onerror = () => {
+    isRecording = false;
+    document.getElementById('btnVoice').classList.remove('active');
+    showToast('Erro no reconhecimento de voz');
+  };
+  recognition.start();
+  isRecording = true;
+  document.getElementById('btnVoice').classList.add('active');
+}
+
+// ── Relatório ──
+function buildMonthOptions() {
+  const all = getEntries();
+  const months = new Set();
+  Object.keys(all).forEach(d => {
+    const [y,m] = d.split('-');
+    months.add(`${y}-${m}`);
+  });
+  // Always add current month
+  const now = new Date();
+  months.add(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`);
+  const sel = document.getElementById('reportMonth');
+  const sorted = [...months].sort().reverse();
+  sel.innerHTML = sorted.map(m => {
+    const [y,mo] = m.split('-');
+    const label = new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+    return `<option value="${m}">${label}</option>`;
+  }).join('');
+}
+
+function renderReport() {
+  const month = document.getElementById('reportMonth').value;
+  const all = getEntries();
+  const days = Object.keys(all).filter(d => d.startsWith(month)).sort();
+  const area = document.getElementById('reportArea');
+
+  if (days.length === 0) {
+    area.innerHTML = '<div class="empty-state"><span>📄</span>Nenhum registro para este período.</div>';
+    return;
+  }
+
+  const turnoOrder = ['mat','ves','not'];
+  area.innerHTML = days.map(day => {
+    const byTurno = { mat: [], ves: [], not: [] };
+    all[day].forEach(e => byTurno[e.turno].push(e.text));
+    const blocks = turnoOrder.filter(t => byTurno[t].length > 0).map(t => `
+      <div class="report-block">
+        <div class="report-block-header ${t}">${turnoLabel(t)}</div>
+        <div class="report-block-body">
+          ${byTurno[t].map(txt => `<div class="report-entry">${escHtml(txt)}</div>`).join('')}
+        </div>
+      </div>`).join('');
+    return `<div class="section-title">${formatDateBR(day)}</div>${blocks}`;
+  }).join('');
+}
+
+// ── Export XLSX (usando biblioteca CDN) ──
+function exportXLSX() {
+  const month = document.getElementById('reportMonth').value;
+  const all = getEntries();
+  const days = Object.keys(all).filter(d => d.startsWith(month)).sort();
+  const cfg = getCfg();
+
+  if (days.length === 0) { showToast('Nenhum dado para exportar'); return; }
+
+  const rows = [['Data', 'Dia da semana', 'Turno', 'Categoria', 'Registro']];
+  const diasSemana = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+
+  days.forEach(day => {
+    const [y,m,d] = day.split('-');
+    const dt = new Date(y,m-1,d);
+    const diaSem = diasSemana[dt.getDay()];
+    const dataBR = `${d}/${m}/${y}`;
+    all[day].forEach(e => {
+      rows.push([dataBR, diaSem, turnoLabel(e.turno), catLabel(e.cat), e.text]);
+    });
+  });
+
+  // Build CSV as fallback, load SheetJS if available
+  if (typeof XLSX !== 'undefined') {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:12},{wch:16},{wch:12},{wch:20},{wch:80}];
+    XLSX.utils.book_append_sheet(wb, ws, 'Rotina');
+    const [y,mo] = month.split('-');
+    const mname = new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'long'});
+    XLSX.writeFile(wb, `Rotina_PCPI_${mname.toUpperCase()}_${y}.xlsx`);
+    showToast('XLSX exportado!');
+  } else {
+    // CSV fallback
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const [y,mo] = month.split('-');
+    const mname = new Date(y,mo-1,1).toLocaleDateString('pt-BR',{month:'long'});
+    a.download = `Rotina_PCPI_${mname.toUpperCase()}_${y}.csv`;
+    a.click();
+    showToast('CSV exportado (instale SheetJS para XLSX)');
+  }
+}
+
+// ── Dimensões ──
+function renderDimensoes() {
+  const all = getEntries();
+  const counts = {};
+  Object.values(all).flat().forEach(e => {
+    counts[e.cat] = (counts[e.cat] || 0) + 1;
+  });
+
+  document.getElementById('dimGrid').innerHTML = DIMENSOES.map(d => `
+    <div class="dim-card">
+      <div class="dim-card-header">
+        <span class="dim-icon">${d.icon}</span>
+        <span class="dim-title">${d.title}</span>
+      </div>
+      <div class="dim-desc">${d.desc}</div>
+      <span class="dim-count">${counts[d.key] || 0} registro${counts[d.key] !== 1 ? 's' : ''}</span>
+    </div>
+  `).join('');
+}
+
+// ── Contatos ──
+function renderContatos() {
+  const contatos = getContatos();
+  const el = document.getElementById('contatosList');
+  if (contatos.length === 0) {
+    el.innerHTML = '<div class="empty-state"><span>👥</span>Nenhum contato cadastrado ainda.</div>';
+    return;
+  }
+  el.innerHTML = contatos.map((c, i) => `
+    <div class="contato-card">
+      <div class="contato-nome">${escHtml(c.nome)}</div>
+      <div class="contato-escola">${escHtml(c.escola)}${c.mun ? ' — ' + escHtml(c.mun) : ''}</div>
+      <div class="contato-links">
+        ${c.tel ? `<a class="contato-link" href="https://wa.me/55${c.tel.replace(/\D/g,'')}">WhatsApp</a>` : ''}
+        ${c.email ? `<a class="contato-link" href="mailto:${escHtml(c.email)}">E-mail</a>` : ''}
+        <button class="contato-link" style="border:none;cursor:pointer;background:var(--mat-light);color:var(--mat)" onclick="removeContato(${i})">Remover</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function removeContato(i) {
+  const c = getContatos();
+  c.splice(i, 1);
+  saveContatos(c);
+  renderContatos();
+}
+
+// ── Config ──
+function loadConfig() {
+  const cfg = getCfg();
+  document.getElementById('cfgNome').value = cfg.nome || 'Thiago Vareiro Valério';
+  document.getElementById('cfgEscola').value = cfg.escola || 'Escola Estadual Joaquim Murtinho';
+  document.getElementById('cfgMunicipio').value = cfg.municipio || 'Campo Grande — CRE 02';
+  document.getElementById('cfgCoordenadora').value = cfg.coordenadora || '';
+  document.getElementById('cfgCursos').value = cfg.cursos || 'Reoferta — Escola como Espaço de Inovação (AVA Saber/SED-MS)\nFormação Continuada IA na Educação Básica (AVA Saber/SED-MS)\nTrilha Formativa Grêmio Estudantil (AVA Aprender/SED-MS)\nEducação Híbrida para docentes da REE/MS (AVA RIEH/MEC-NEES-UFAL)\nLiderança em IA na Gestão Pública — FGV (Apolitical)\nEngenharia de Prompts Eficaz (Apolitical)';
+  document.getElementById('headerEscola').textContent = (cfg.escola || 'EEJM') + ' — Campo Grande/MS';
+}
+
+function saveConfig() {
+  saveCfg({
+    nome: document.getElementById('cfgNome').value.trim(),
+    escola: document.getElementById('cfgEscola').value.trim(),
+    municipio: document.getElementById('cfgMunicipio').value.trim(),
+    coordenadora: document.getElementById('cfgCoordenadora').value.trim(),
+    cursos: document.getElementById('cfgCursos').value.trim(),
+  });
+  document.getElementById('headerEscola').textContent =
+    document.getElementById('cfgEscola').value.trim() + ' — Campo Grande/MS';
+  showToast('Configurações salvas ✓');
+}
+
+// ── Nav ──
+function showNav(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('view-' + view);
+  if (el) el.classList.add('active');
+  const nb = document.getElementById('nav-' + view);
+  if (nb) nb.classList.add('active');
+
+  if (view === 'relatorio') { buildMonthOptions(); renderReport(); }
+  if (view === 'dimensoes') { renderDimensoes(); renderContatos(); }
+  if (view === 'config') { loadConfig(); }
+}
+
+function showSubview(id, btn) {
+  document.querySelectorAll('.subview').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-sec').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Helpers ──
+function turnoLabel(t) {
+  return { mat: 'Matutino', ves: 'Vespertino', not: 'Noturno' }[t] || t;
+}
+function catLabel(c) {
+  return { professor:'Atendimento a professor', ste:'STE', equipamento:'Equipamento',
+    estudo:'Momento de estudo', colaborativa:'Ação colaborativa', projeto:'Projeto',
+    reuniao:'Reunião', livre:'Livre' }[c] || c;
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── SheetJS lazy load ──
+function ensureXLSX(cb) {
+  if (typeof XLSX !== 'undefined') { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload = cb;
+  document.head.appendChild(s);
+}
+// Override exportXLSX to load XLSX first
+const _exportXLSX = exportXLSX;
+window.exportXLSX = () => ensureXLSX(_exportXLSX);
+
+// ── Init ──
+document.getElementById('dateInput').value = todayStr();
+loadEntries();
+loadConfig();
+
+// Auto-detect turno
+(function() {
+  const h = new Date().getHours();
+  if (h >= 12 && h < 18) {
+    setTurno('ves', document.querySelectorAll('.turno-btn')[1]);
+  } else if (h >= 18) {
+    setTurno('not', document.querySelectorAll('.turno-btn')[2]);
+  }
+})();
+</script>
+</body>
+</html>
