@@ -714,7 +714,14 @@
 <div id="view-relatorio" class="view">
   <div class="report-month-selector">
     <select id="reportMonth" onchange="renderReport()"></select>
-    <button class="btn-export" onclick="exportXLSX()">⬇ Exportar XLSX</button>
+    <button class="btn-export" onclick="exportXLSX()">⬇ XLSX</button>
+  </div>
+  <div style="padding:0 20px 8px;display:flex;gap:8px;align-items:center">
+    <label style="font-size:12px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;gap:6px;border:1px dashed var(--border);border-radius:8px;padding:6px 12px;background:var(--surface)">
+      ⬆ Importar CSV
+      <input type="file" accept=".csv" style="display:none" onchange="importCSV(event)">
+    </label>
+    <span style="font-size:11px;color:var(--text-muted)">Formato: data (DD/MM/AAAA), turno, categoria, texto</span>
   </div>
   <div class="report-area" id="reportArea"></div>
 </div>
@@ -790,9 +797,13 @@
     <div class="config-section">
       <div class="config-section-title">Cursos online em andamento</div>
       <div class="config-row">
-        <label>Cursos (um por linha)</label>
-        <textarea id="cfgCursos" rows="5" placeholder="Reoferta — Escola como Espaço de Inovação (AVA Saber/SED-MS)&#10;Formação Continuada IA na Educação Básica (AVA Saber/SED-MS)&#10;Trilha Formativa Grêmio Estudantil (AVA Aprender/SED-MS)&#10;Educação Híbrida para docentes da REE/MS (AVA RIEH/MEC-NEES-UFAL)&#10;Liderança em IA na Gestão Pública — FGV (Apolitical)&#10;Engenharia de Prompts Eficaz (Apolitical)"></textarea>
+        <label>Novo curso</label>
+        <div style="display:flex;gap:8px">
+          <input id="cfgNovoCurso" type="text" placeholder="Nome do curso (plataforma)" style="flex:1">
+          <button class="btn-primary" style="white-space:nowrap" onclick="adicionarCurso()">Adicionar</button>
+        </div>
       </div>
+      <div id="listaCursos" style="display:flex;flex-direction:column;gap:6px;margin-top:8px"></div>
     </div>
 
     <div class="config-section">
@@ -869,6 +880,21 @@ function getContatos() {
 function saveContatos(data) {
   try { localStorage.setItem('pcpi_contatos', JSON.stringify(data)); } catch {}
 }
+function getCursos() {
+  try {
+    const raw = localStorage.getItem('pcpi_cursos');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    // retrocompatibilidade: se for array de strings, converte para objetos
+    if (typeof parsed[0] === 'string') {
+      return parsed.map(nome => ({ nome, concluido: false }));
+    }
+    return parsed;
+  } catch { return []; }
+}
+function saveCursos(data) {
+  try { localStorage.setItem('pcpi_cursos', JSON.stringify(data)); } catch {}
+}
 
 // ── Date helpers ──
 function todayStr() {
@@ -908,15 +934,51 @@ function loadEntries() {
   }
 
   list.innerHTML = dayEntries.map((e, i) => `
-    <div class="entry-card">
+    <div class="entry-card" onclick="editEntry('${date}',${i})">
       <div class="entry-dot ${e.turno}"></div>
       <div class="entry-body">
         <div class="entry-cat">${turnoLabel(e.turno)} · ${catLabel(e.cat)}</div>
         <div class="entry-text">${escHtml(e.text)}</div>
       </div>
-      <button class="entry-del" onclick="deleteEntry('${date}',${i})" title="Remover">✕</button>
+      <button class="entry-del" onclick="event.stopPropagation();deleteEntry('${date}',${i})" title="Remover">✕</button>
     </div>
   `).join('');
+}
+
+function editEntry(date, idx) {
+  const all = getEntries();
+  const e = all[date] && all[date][idx];
+  if (!e) return;
+  document.getElementById('modalTitle').textContent = '✏️ Editar registro';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-group"><label>Turno</label>
+      <select id="edit_turno">
+        <option value="mat" ${e.turno==='mat'?'selected':''}>Matutino</option>
+        <option value="ves" ${e.turno==='ves'?'selected':''}>Vespertino</option>
+        <option value="not" ${e.turno==='not'?'selected':''}>Noturno</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Texto</label>
+      <textarea id="edit_text" rows="5">${escHtml(e.text)}</textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveEditEntry('${date}',${idx})">Salvar</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function saveEditEntry(date, idx) {
+  const turno = document.getElementById('edit_turno').value;
+  const text = document.getElementById('edit_text').value.trim();
+  if (!text) { showToast('Texto não pode estar vazio'); return; }
+  const all = getEntries();
+  all[date][idx].turno = turno;
+  all[date][idx].text = text;
+  saveEntries(all);
+  closeModal();
+  loadEntries();
+  showToast('Registro atualizado ✓');
 }
 
 function deleteEntry(date, idx) {
@@ -1012,7 +1074,11 @@ const MODAL_FORMS = {
     title: '📚 Momento de estudo',
     build: () => {
       const cfg = getCfg();
-      const cursos = (cfg.cursos || 'Reoferta — Escola como Espaço de Inovação (AVA Saber/SED-MS)\nFormação Continuada IA na Educação Básica (AVA Saber/SED-MS)\nTrilha Formativa Grêmio Estudantil (AVA Aprender/SED-MS)\nEducação Híbrida para docentes da REE/MS (AVA RIEH/MEC-NEES-UFAL)\nLiderança em IA na Gestão Pública — FGV (Apolitical)\nEngenharia de Prompts Eficaz (Apolitical)').split('\n').filter(Boolean);
+      const cursosSalvos = getCursos();
+      const cursosAtivos = cursosSalvos.filter(c => !c.concluido).map(c => c.nome);
+      // fallback se ainda não tem cursos cadastrados
+      const cursosDefault = ['Reoferta — Escola como Espaço de Inovação (AVA Saber/SED-MS)','Formação Continuada IA na Educação Básica (AVA Saber/SED-MS)','Trilha Formativa Grêmio Estudantil (AVA Aprender/SED-MS)','Educação Híbrida para docentes da REE/MS (AVA RIEH/MEC-NEES-UFAL)','Liderança em IA na Gestão Pública — FGV (Apolitical)','Engenharia de Prompts Eficaz (Apolitical)'];
+      const cursos = cursosAtivos.length > 0 ? cursosAtivos : cursosDefault;
       const opts = cursos.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
       return `
         <div class="form-group"><label>Curso / formação</label>
@@ -1392,8 +1458,8 @@ function loadConfig() {
   document.getElementById('cfgEscola').value = cfg.escola || 'Escola Estadual Joaquim Murtinho';
   document.getElementById('cfgMunicipio').value = cfg.municipio || 'Campo Grande — CRE 02';
   document.getElementById('cfgCoordenadora').value = cfg.coordenadora || '';
-  document.getElementById('cfgCursos').value = cfg.cursos || 'Reoferta — Escola como Espaço de Inovação (AVA Saber/SED-MS)\nFormação Continuada IA na Educação Básica (AVA Saber/SED-MS)\nTrilha Formativa Grêmio Estudantil (AVA Aprender/SED-MS)\nEducação Híbrida para docentes da REE/MS (AVA RIEH/MEC-NEES-UFAL)\nLiderança em IA na Gestão Pública — FGV (Apolitical)\nEngenharia de Prompts Eficaz (Apolitical)';
   document.getElementById('headerEscola').textContent = (cfg.escola || 'EEJM') + ' — Campo Grande/MS';
+  renderListaCursos();
 }
 
 function saveConfig() {
@@ -1402,11 +1468,53 @@ function saveConfig() {
     escola: document.getElementById('cfgEscola').value.trim(),
     municipio: document.getElementById('cfgMunicipio').value.trim(),
     coordenadora: document.getElementById('cfgCoordenadora').value.trim(),
-    cursos: document.getElementById('cfgCursos').value.trim(),
   });
   document.getElementById('headerEscola').textContent =
     document.getElementById('cfgEscola').value.trim() + ' — Campo Grande/MS';
   showToast('Configurações salvas ✓');
+}
+
+function renderListaCursos() {
+  const cursos = getCursos();
+  const el = document.getElementById('listaCursos');
+  if (!el) return;
+  if (cursos.length === 0) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text-muted);padding:4px 0">Nenhum curso cadastrado.</div>';
+    return;
+  }
+  el.innerHTML = cursos.map((c, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--base);border-radius:8px;border:1px solid var(--border)">
+      <input type="checkbox" id="curso_${i}" ${c.concluido ? 'checked' : ''} onchange="toggleCursoConcluido(${i})" style="width:16px;height:16px;accent-color:var(--mat)">
+      <label for="curso_${i}" style="flex:1;font-size:13px;${c.concluido ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${escHtml(c.nome)}</label>
+      <button onclick="removerCurso(${i})" style="border:none;background:none;cursor:pointer;color:var(--text-muted);font-size:16px;padding:0 4px" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+function adicionarCurso() {
+  const inp = document.getElementById('cfgNovoCurso');
+  const nome = inp.value.trim();
+  if (!nome) { showToast('Digite o nome do curso'); return; }
+  const cursos = getCursos();
+  cursos.push({ nome, concluido: false });
+  saveCursos(cursos);
+  inp.value = '';
+  renderListaCursos();
+  showToast('Curso adicionado ✓');
+}
+
+function toggleCursoConcluido(i) {
+  const cursos = getCursos();
+  cursos[i].concluido = !cursos[i].concluido;
+  saveCursos(cursos);
+  renderListaCursos();
+}
+
+function removerCurso(i) {
+  const cursos = getCursos();
+  cursos.splice(i, 1);
+  saveCursos(cursos);
+  renderListaCursos();
 }
 
 // ── Nav ──
@@ -1447,6 +1555,57 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Importação CSV ──
+function importCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) { showToast('Arquivo vazio'); return; }
+    // pula cabeçalho se primeira coluna for "data" ou "Data"
+    const start = lines[0].toLowerCase().includes('data') ? 1 : 0;
+    const all = getEntries();
+    let count = 0;
+    const turnoMap = { 'matutino':'mat','vespertino':'ves','noturno':'not','mat':'mat','ves':'ves','not':'not' };
+    const catMap = { 'atendimento a professor':'professor','ste':'ste','equipamento':'equipamento','momento de estudo':'estudo','ação colaborativa':'colaborativa','projeto':'projeto','reunião':'reuniao','livre':'livre' };
+    for (let i = start; i < lines.length; i++) {
+      // suporta separador ; ou ,
+      const sep = lines[i].includes(';') ? ';' : ',';
+      const parts = lines[i].split(sep).map(p => p.replace(/^"|"$/g,'').trim());
+      if (parts.length < 2) continue;
+      let dateISO = '';
+      // tenta DD/MM/AAAA
+      const dm = parts[0].match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (dm) dateISO = `${dm[3]}-${dm[2].padStart(2,'0')}-${dm[1].padStart(2,'0')}`;
+      else if (/^\d{4}-\d{2}-\d{2}$/.test(parts[0])) dateISO = parts[0];
+      if (!dateISO) continue;
+      // se 4 colunas: data, turno, categoria, texto
+      let turno = 'mat', cat = 'livre', text = '';
+      if (parts.length >= 4) {
+        turno = turnoMap[parts[1].toLowerCase()] || 'mat';
+        cat = catMap[parts[2].toLowerCase()] || 'livre';
+        text = parts[3];
+      } else if (parts.length === 3) {
+        turno = turnoMap[parts[1].toLowerCase()] || 'mat';
+        text = parts[2];
+      } else {
+        text = parts[1];
+      }
+      if (!text) continue;
+      if (!all[dateISO]) all[dateISO] = [];
+      all[dateISO].push({ turno, cat, text });
+      count++;
+    }
+    saveEntries(all);
+    buildMonthOptions();
+    renderReport();
+    showToast(`${count} registro(s) importado(s) ✓`);
+    event.target.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
 }
 
 // ── SheetJS lazy load ──
