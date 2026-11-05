@@ -683,6 +683,14 @@
       <span class="cat-icon">🔬</span>
       <span class="cat-label">Projeto / iniciativa científica</span>
     </button>
+    <button class="cat-btn" onclick="openModal('formacao')">
+      <span class="cat-icon">🎓</span>
+      <span class="cat-label">Formação a professores</span>
+    </button>
+    <button class="cat-btn" onclick="openModal('zeladoria')">
+      <span class="cat-icon">🔧</span>
+      <span class="cat-label">Zeladoria / manutenção</span>
+    </button>
     <button class="cat-btn wide" onclick="openModal('reuniao')">
       <span class="cat-icon">💬</span>
       <span class="cat-label">Reunião / conselho de classe</span>
@@ -807,6 +815,15 @@
     </div>
 
     <div class="config-section">
+      <div class="config-section-title">Referências</div>
+      <a href="https://drive.google.com/file/d/1HEZY42EKoG8pViMrirxGomEtqXjJHt4E/view" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--mat-light);border:1px solid var(--mat);border-radius:var(--radius);text-decoration:none;color:var(--mat-dark);font-size:13px;font-weight:600;margin:0 14px 8px">
+        <span style="font-size:22px">📄</span>
+        <span>Orientações COTED/SITEC para registro de rotina no e-SGDE</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text-muted);font-weight:400">Abrir ↗</span>
+      </a>
+    </div>
+
+    <div class="config-section">
       <div class="config-section-title">Contatos SED</div>
       <div style="padding:12px 14px;font-size:13px;color:var(--text-muted);line-height:1.7">
         <p><strong>SITEC:</strong> sitec@sed.ms.gov.br | (67) 3318-2250</p>
@@ -853,8 +870,10 @@ let recognition = null;
 let isRecording = false;
 
 const DIMENSOES = [
-  { icon: '👩‍🏫', title: 'Formação e orientação a professores', desc: 'Auxílio, atendimento, orientação e disponibilização de recursos pedagógicos ao corpo docente. Inclui tutoriais, workshops e indicação de metodologias.', key: 'professor' },
-  { icon: '🖥', title: 'Gestão dos recursos tecnológicos', desc: 'Agendamento, entrega/recebimento, disponibilização e zeladoria dos equipamentos da STE, Laboratório, BOBs, LDM e Kit de Robótica.', key: 'ste' },
+  { icon: '👩‍🏫', title: 'Atendimento e orientação a professores', desc: 'Auxílio, atendimento, orientação e disponibilização de recursos pedagógicos ao corpo docente. Inclui tutoriais e indicação de metodologias.', key: 'professor' },
+  { icon: '🎓', title: 'Formação a professores', desc: 'Realização de oficinas, workshops, capacitações e demonstrações práticas para o corpo docente sobre uso de ferramentas e metodologias inovadoras.', key: 'formacao' },
+  { icon: '🖥', title: 'Gestão dos recursos tecnológicos', desc: 'Agendamento, entrega/recebimento e disponibilização dos equipamentos da STE, Laboratório, BOBs, LDM e Kit de Robótica.', key: 'ste' },
+  { icon: '🔧', title: 'Zeladoria / manutenção', desc: 'Comunicação de danos, limpeza, verificação de funcionamento e organização dos equipamentos e espaços tecnológicos da escola.', key: 'zeladoria' },
   { icon: '🔬', title: 'Projetos e iniciação científica', desc: 'Fomento e acompanhamento de projetos de iniciação científica, clubes de ciências, leitura e robótica.', key: 'projeto' },
   { icon: '📚', title: 'Formação continuada própria', desc: 'Participação em cursos, trilhas formativas, workshops e reuniões da COTED, SITEC, CRE e plataformas como AVA Saber, Apolitical e RIEH.', key: 'estudo' },
   { icon: '🤝', title: 'Ações colaborativas e de gestão', desc: 'Apoio eventual à coordenação e direção em demandas fora da rotina: conselho de classe, eventos, organização e distribuição de materiais.', key: 'colaborativa' },
@@ -1152,6 +1171,45 @@ const MODAL_FORMS = {
         <button class="btn-primary" onclick="submitReuniao()">Registrar</button>
       </div>`
   },
+  formacao: {
+    title: '🎓 Formação a professores',
+    build: () => `
+      <div class="form-group"><label>Tipo de formação</label>
+        <select id="mf_form_tipo">
+          <option>Oficina</option>
+          <option>Workshop</option>
+          <option>Apresentação de ferramenta</option>
+          <option>Demonstração prática</option>
+          <option>Capacitação</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Tema / ferramenta</label><input id="mf_form_tema" type="text" placeholder="Ex: uso do Canva, Scratch, robótica..."></div>
+      <div class="form-group"><label>Professores participantes</label><input id="mf_form_prof" type="text" placeholder="Ex: Ana, Matemática; João, Ciências — ou 'corpo docente'"></div>
+      <div class="form-group"><label>Local (opcional)</label><input id="mf_form_local" type="text" placeholder="Ex: STE, sala dos professores, PL..."></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitFormacao()">Registrar</button>
+      </div>`
+  },
+  zeladoria: {
+    title: '🔧 Zeladoria / manutenção',
+    build: () => `
+      <div class="form-group"><label>Tipo de ação</label>
+        <select id="mf_zel_tipo">
+          <option>Comunicação de dano/defeito</option>
+          <option>Limpeza de equipamento</option>
+          <option>Verificação de funcionamento</option>
+          <option>Organização do espaço</option>
+          <option>Recebimento de técnico</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Equipamento / espaço</label><input id="mf_zel_equip" type="text" placeholder="Ex: projetor multimídia, STE, notebooks..."></div>
+      <div class="form-group"><label>Observação (opcional)</label><textarea id="mf_zel_obs" rows="2" placeholder="Ex: defeito relatado à coordenação, chamado aberto..."></textarea></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" onclick="submitZeladoria()">Registrar</button>
+      </div>`
+  },
   livre: {
     title: '✏️ Entrada livre',
     build: () => `
@@ -1264,6 +1322,30 @@ function submitLivre() {
   if (!v) return;
   closeModal();
   addEntry(v, 'livre');
+}
+function submitFormacao() {
+  const tipo = document.getElementById('mf_form_tipo').value;
+  const tema = document.getElementById('mf_form_tema').value.trim();
+  const prof = document.getElementById('mf_form_prof').value.trim();
+  const local = document.getElementById('mf_form_local').value.trim();
+  if (!tema) { showToast('Informe o tema da formação'); return; }
+  let text = `Realização de ${tipo.toLowerCase()} sobre ${tema}`;
+  if (prof) text += `, para ${prof}`;
+  if (local) text += `, na ${local}`;
+  text += '.';
+  closeModal();
+  addEntry(text, 'formacao');
+}
+function submitZeladoria() {
+  const tipo = document.getElementById('mf_zel_tipo').value;
+  const equip = document.getElementById('mf_zel_equip').value.trim();
+  const obs = document.getElementById('mf_zel_obs').value.trim();
+  if (!equip) { showToast('Informe o equipamento ou espaço'); return; }
+  let text = `${tipo} de ${equip}`;
+  if (obs) text += `. ${obs}`;
+  if (!text.endsWith('.')) text += '.';
+  closeModal();
+  addEntry(text, 'zeladoria');
 }
 function submitContato() {
   const nome = document.getElementById('mf_ct_nome').value.trim();
