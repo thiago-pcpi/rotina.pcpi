@@ -119,7 +119,7 @@
   .empty-state { text-align: center; color: var(--text-muted); padding: 32px 20px; font-size: 14px; }
   .empty-state span { display: block; font-size: 32px; margin-bottom: 8px; }
   .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--surface); border-top: 1px solid var(--border); display: flex; z-index: 100; }
-  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 0 12px; cursor: pointer; border: none; background: none; color: var(--text-muted); font-size: 10px; font-weight: 600; font-family: inherit; transition: color .12s; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 9px 0 11px; cursor: pointer; border: none; background: none; color: var(--text-muted); font-size: 9px; font-weight: 600; font-family: inherit; transition: color .12s; }
   .nav-item.active { color: var(--mat); }
   .nav-icon { font-size: 20px; }
   .view { display: none; }
@@ -188,6 +188,35 @@
   .destaque-badge.bolsa { background: #F0FFF4; color: #276749; }
   .destaque-badge.feira { background: #FFF8E1; color: #92600A; }
   .destaque-badge.camp { background: var(--not-light); color: var(--not-dark); }
+
+  /* ── Painel de Professores ── */
+  .prof-filter-bar { display: flex; gap: 6px; padding: 12px 20px 4px; overflow-x: auto; }
+  .prof-filter-btn { padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); white-space: nowrap; font-family: inherit; transition: all .12s; }
+  .prof-filter-btn.active { background: var(--mat-light); color: var(--mat-dark); border-color: var(--mat); }
+  .prof-panel-area { padding: 8px 20px 80px; }
+  .prof-group-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin: 16px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .prof-group-title .prof-group-badge { background: var(--mat-light); color: var(--mat-dark); border-radius: 20px; padding: 1px 7px; font-size: 10px; }
+  .prof-group-title.g-none .prof-group-badge { background: #FEE2E2; color: #9B2C2C; }
+  .prof-group-title.g-few .prof-group-badge { background: #FFFBEB; color: #744210; }
+  .prof-group-title.g-many .prof-group-badge { background: #F0FFF4; color: #276749; }
+  .prof-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+  .prof-row-info { flex: 1; min-width: 0; }
+  .prof-row-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prof-row-meta { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .prof-row-count { font-size: 12px; font-weight: 700; min-width: 28px; text-align: right; }
+  .prof-row-count.c0 { color: var(--text-muted); }
+  .prof-row-count.c1 { color: var(--ves-dark); }
+  .prof-row-count.c3 { color: var(--success); }
+  .badge-inov { display: inline-block; background: #EEF9FF; color: #1A6FA3; border-radius: 20px; font-size: 10px; font-weight: 700; padding: 1px 7px; margin-left: 4px; }
+
+  /* ── Backup ── */
+  .backup-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; }
+  .btn-backup { flex: 1; min-width: 120px; padding: 11px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--base); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .12s; }
+  .btn-backup:hover { border-color: var(--mat); color: var(--mat); background: var(--mat-light); }
+  .btn-backup.primary { background: var(--mat); color: #fff; border-color: var(--mat); }
+  .btn-backup.primary:hover { background: var(--mat-dark); }
+  .btn-backup.danger { border-color: #FC8181; color: #9B2C2C; }
+  .btn-backup.danger:hover { background: #FFF5F5; }
 </style>
 </head>
 <body>
@@ -410,8 +439,38 @@
       </div>
     </div>
 
+    <div class="config-section">
+      <div class="config-section-title">📦 Backup e restauração</div>
+      <div style="padding:10px 14px 4px;font-size:12px;color:var(--text-muted);line-height:1.5">
+        Exporte todos os seus dados (registros, professores, cursos, configurações) em um arquivo JSON para guardar como backup ou transferir para outro dispositivo.
+      </div>
+      <div class="backup-row">
+        <button class="btn-backup primary" onclick="exportBackup()">⬇ Exportar backup</button>
+        <button class="btn-backup" onclick="shareBackup()">↗ Compartilhar</button>
+      </div>
+      <div class="backup-row" style="padding-top:4px">
+        <label class="btn-backup" style="cursor:pointer">
+          ⬆ Restaurar backup
+          <input type="file" accept=".json" style="display:none" onchange="importBackup(event)">
+        </label>
+      </div>
+      <div style="padding:4px 14px 12px;font-size:11px;color:#9B2C2C">⚠️ Restaurar substitui todos os dados atuais.</div>
+    </div>
+
     <button class="btn-save-config" onclick="saveConfig()">Salvar configurações</button>
   </div>
+</div>
+
+<!-- VIEW: Professores -->
+<div id="view-professores" class="view content">
+  <div class="prof-filter-bar" id="profFilterBar">
+    <button class="prof-filter-btn active" data-turno="todos" onclick="setProfFilter('todos',this)">Todos</button>
+    <button class="prof-filter-btn" data-turno="mat" onclick="setProfFilter('mat',this)">☀️ Matutino</button>
+    <button class="prof-filter-btn" data-turno="ves" onclick="setProfFilter('ves',this)">🌤 Vespertino</button>
+    <button class="prof-filter-btn" data-turno="not" onclick="setProfFilter('not',this)">🌙 Noturno</button>
+    <button class="prof-filter-btn" data-turno="sem" onclick="setProfFilter('sem',this)">Sem turno</button>
+  </div>
+  <div class="prof-panel-area" id="profPanelArea"></div>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -424,6 +483,9 @@
   </button>
   <button class="nav-item" id="nav-dimensoes" onclick="showNav('dimensoes')">
     <span class="nav-icon">🧩</span>Dimensões
+  </button>
+  <button class="nav-item" id="nav-professores" onclick="showNav('professores')">
+    <span class="nav-icon">👩‍🏫</span>Professores
   </button>
   <button class="nav-item" id="nav-config" onclick="showNav('config')">
     <span class="nav-icon">⚙️</span>Config
@@ -603,12 +665,14 @@ function deleteEntry(date, idx) {
   showToast('Registro removido');
 }
 
-function addEntry(text, cat) {
+function addEntry(text, cat, meta) {
   if (!text.trim()) return;
   const date = document.getElementById('dateInput').value;
   const all = getEntries();
   if (!all[date]) all[date] = [];
-  all[date].push({ turno: currentTurno, cat: cat || 'livre', text: text.trim() });
+  const entry = { turno: currentTurno, cat: cat || 'livre', text: text.trim() };
+  if (meta) Object.assign(entry, meta);
+  all[date].push(entry);
   saveEntries(all);
   loadEntries();
   showToast('Registrado ✓');
@@ -646,6 +710,10 @@ const MODAL_FORMS = {
           </select>
         </div>
         <div class="form-group"><label>Complemento (opcional)</label><textarea id="mf_comp" placeholder="Turma, plataforma, detalhes..."></textarea></div>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer;font-size:13px;font-weight:500">
+          <input type="checkbox" id="mf_inov_flag" style="width:18px;height:18px;accent-color:var(--mat)">
+          Inclui orientação sobre tecnologia / inovação
+        </label>
         <div class="btn-row">
           <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
           <button class="btn-primary" onclick="submitProf()">Registrar</button>
@@ -905,7 +973,7 @@ const MODAL_FORMS = {
       return `
         <div class="form-group">
           <label>Cole lista (nome, disciplina, e-mail, telefone, observações)</label>
-          <textarea class="paste-area" id="mf_prof_paste" placeholder="Ana Lima, Português, ana@email.com, (67)99999-0001, período matutino\nCarlos, Matemática\n..." style="min-height:100px"></textarea>
+          <textarea class="paste-area" id="mf_prof_paste" placeholder="Ana Lima, Português, ana@email.com, (67)99999-0001, mat, turmas 1A/2A&#10;Carlos, Matemática&#10;...&#10;Campos: nome, disciplina, email, tel, turno (mat/ves/not), obs" style="min-height:100px"></textarea>
           <button class="btn-sm" style="margin-top:6px;width:100%" onclick="importProfList()">Importar lista</button>
         </div>
         <hr style="margin:12px 0;border:none;border-top:1px solid var(--border)">
@@ -914,7 +982,15 @@ const MODAL_FORMS = {
         <div class="form-group"><label>Disciplina</label><input id="mf_pd" type="text" placeholder="Componente curricular"></div>
         <div class="form-group"><label>E-mail (opcional)</label><input id="mf_pe" type="email"></div>
         <div class="form-group"><label>Telefone (opcional)</label><input id="mf_pt" type="tel"></div>
-        <div class="form-group"><label>Observações (opcional)</label><input id="mf_po" type="text" placeholder="Turno, turmas, etc."></div>
+        <div class="form-group"><label>Turno</label>
+          <select id="mf_pt_turno">
+            <option value="">Sem turno definido</option>
+            <option value="mat">Matutino</option>
+            <option value="ves">Vespertino</option>
+            <option value="not">Noturno</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Observações (opcional)</label><input id="mf_po" type="text" placeholder="Turmas, etc."></div>
         <div class="btn-row">
           <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
           <button class="btn-primary" onclick="addProfessor()">Adicionar</button>
@@ -1016,9 +1092,10 @@ function submitProf() {
   const prof = document.getElementById('mf_prof').value.trim();
   const acao = document.getElementById('mf_acao').value;
   const comp = document.getElementById('mf_comp').value.trim();
+  const inov = document.getElementById('mf_inov_flag') ? document.getElementById('mf_inov_flag').checked : false;
   if (!prof || !acao) { showToast('Preencha professor e ação'); return; }
   const text = `${acao} ao(à) professor(a) ${prof}${comp ? ', ' + comp : ''}.`;
-  closeModal(); addEntry(text, 'professor');
+  closeModal(); addEntry(text, 'professor', { inovacao: inov, profNome: prof });
 }
 function submitSTE() {
   const espaco = document.getElementById('mf_espaco').value;
@@ -1195,7 +1272,7 @@ function renderProfList() {
       <div class="teacher-item">
         <div class="teacher-item-info">
           <div class="teacher-item-name">${escHtml(p.nome)}</div>
-          <div class="teacher-item-meta">${[p.disciplina, p.obs].filter(Boolean).map(escHtml).join(' · ')}</div>
+          <div class="teacher-item-meta">${[p.disciplina, p.turno ? turnoLabel(p.turno) : '', p.obs].filter(Boolean).map(escHtml).join(' · ')}</div>
         </div>
         <button onclick="removeProf(${i})" title="Remover">✕</button>
       </div>`).join('');
@@ -1209,10 +1286,12 @@ function addProfessor() {
     disciplina: document.getElementById('mf_pd').value.trim(),
     email: document.getElementById('mf_pe').value.trim(),
     tel: document.getElementById('mf_pt').value.trim(),
+    turno: document.getElementById('mf_pt_turno') ? document.getElementById('mf_pt_turno').value : '',
     obs: document.getElementById('mf_po').value.trim()
   });
   saveProfessores(p);
   ['mf_pn','mf_pd','mf_pe','mf_pt','mf_po'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const tsel = document.getElementById('mf_pt_turno'); if (tsel) tsel.value = '';
   renderProfList();
   showToast('Professor(a) cadastrado(a) ✓');
 }
@@ -1222,11 +1301,16 @@ function importProfList() {
   const lines = raw.split('\n').filter(l => l.trim());
   const p = getProfessores();
   let count = 0;
+  const turnoImportMap = { mat:'mat', matutino:'mat', ves:'ves', vespertino:'ves', not:'not', noturno:'not' };
   lines.forEach(line => {
+    if (line.startsWith('#') || line.startsWith('//')) return; // pula comentários
     const sep = line.includes(';') ? ';' : ',';
     const parts = line.split(sep).map(x => x.trim());
     if (!parts[0]) return;
-    p.push({ nome: parts[0], disciplina: parts[1]||'', email: parts[2]||'', tel: parts[3]||'', obs: parts[4]||'' });
+    // formato: nome, disciplina, email, tel, turno, obs  (turno pode estar em obs também)
+    const rawTurno = (parts[4] || '').toLowerCase();
+    const turno = turnoImportMap[rawTurno] || '';
+    p.push({ nome: parts[0], disciplina: parts[1]||'', email: parts[2]||'', tel: parts[3]||'', turno, obs: parts[5]||parts[4]||'' });
     count++;
   });
   saveProfessores(p);
@@ -1433,6 +1517,7 @@ function showNav(view) {
   if (view === 'relatorio') { buildMonthOptions(); renderReport(); }
   if (view === 'dimensoes') { renderDimensoes(); renderContatos(); renderDestaques(); }
   if (view === 'config') { loadConfig(); }
+  if (view === 'professores') { renderProfPanel(); }
 }
 function showSubview(id, btn) {
   document.querySelectorAll('.subview').forEach(v => v.classList.remove('active'));
@@ -1504,6 +1589,174 @@ function ensureXLSX(cb) {
 }
 const _exportXLSX = exportXLSX;
 window.exportXLSX = () => ensureXLSX(_exportXLSX);
+
+// ── Painel de Professores ──
+let currentProfFilter = 'todos';
+function setProfFilter(turno, btn) {
+  currentProfFilter = turno;
+  document.querySelectorAll('.prof-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProfPanel();
+}
+
+function renderProfPanel() {
+  const profs = getProfessores();
+  const all = getEntries();
+
+  // Monta mapa: nome_normalizado → { count, inovacao }
+  const statsMap = {};
+  Object.values(all).flat().forEach(e => {
+    if (e.cat !== 'professor') return;
+    // Extrai nome do profNome (campo extra) ou do texto
+    let nome = e.profNome || '';
+    if (!nome) {
+      const m = e.text.match(/professor\(a\)\s+([^,\.]+)/i);
+      if (m) nome = m[1].trim();
+    }
+    if (!nome) return;
+    const key = nome.toLowerCase().trim();
+    if (!statsMap[key]) statsMap[key] = { count: 0, inovacao: false, nome };
+    statsMap[key].count++;
+    if (e.inovacao) statsMap[key].inovacao = true;
+  });
+
+  // Filtra professores pelo turno
+  const filtered = profs.filter(p => {
+    if (currentProfFilter === 'todos') return true;
+    if (currentProfFilter === 'sem') return !p.turno;
+    return p.turno === currentProfFilter;
+  });
+
+  // Adiciona professores que aparecem nos registros mas não estão cadastrados
+  const cadastradosKeys = new Set(profs.map(p => p.nome.toLowerCase().trim()));
+  Object.values(statsMap).forEach(s => {
+    if (!cadastradosKeys.has(s.nome.toLowerCase().trim())) {
+      if (currentProfFilter === 'todos' || currentProfFilter === 'sem') {
+        filtered.push({ nome: s.nome, disciplina: '', turno: '', _virtual: true });
+      }
+    }
+  });
+
+  // Enriquece com stats
+  const enriched = filtered.map(p => {
+    const key = p.nome.toLowerCase().trim();
+    const stats = statsMap[key] || { count: 0, inovacao: false };
+    return { ...p, count: stats.count, inovacao: stats.inovacao };
+  });
+
+  // Agrupa
+  const g0 = enriched.filter(p => p.count === 0);
+  const g1 = enriched.filter(p => p.count >= 1 && p.count <= 2);
+  const g3 = enriched.filter(p => p.count >= 3);
+
+  const area = document.getElementById('profPanelArea');
+  if (enriched.length === 0) {
+    area.innerHTML = '<div class="empty-state"><span>👩‍🏫</span>Nenhum professor neste filtro.<br>Cadastre professores em Lançar → Gerenciar lista.</div>';
+    return;
+  }
+
+  function profRow(p) {
+    const countCls = p.count === 0 ? 'c0' : p.count >= 3 ? 'c3' : 'c1';
+    const inov = p.inovacao ? '<span class="badge-inov">💡 Inovação</span>' : '';
+    const meta = [p.disciplina, p.turno ? turnoLabel(p.turno) : ''].filter(Boolean).join(' · ');
+    return `<div class="prof-row">
+      <div class="prof-row-info">
+        <div class="prof-row-name">${escHtml(p.nome)}${inov}</div>
+        ${meta ? `<div class="prof-row-meta">${escHtml(meta)}</div>` : ''}
+      </div>
+      <div class="prof-row-count ${countCls}">${p.count}×</div>
+    </div>`;
+  }
+
+  function group(label, cssClass, list) {
+    if (list.length === 0) return '';
+    return `<div class="prof-group-title ${cssClass}">${label} <span class="prof-group-badge">${list.length}</span></div>
+      ${list.map(profRow).join('')}`;
+  }
+
+  area.innerHTML =
+    group('Nunca atendidos', 'g-none', g0) +
+    group('1–2 atendimentos', 'g-few', g1) +
+    group('3+ atendimentos', 'g-many', g3);
+}
+
+// ── Backup / Restore ──
+const BACKUP_KEYS = ['pcpi_entries','pcpi_cfg','pcpi_contatos','pcpi_destaques','pcpi_professores','pcpi_ste','pcpi_equip','pcpi_cursos','pcpi_colaboradores','pcpi_reunioes','pcpi_espacosSTE'];
+
+function exportBackup() {
+  const data = {};
+  BACKUP_KEYS.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v) data[k] = JSON.parse(v);
+  });
+  data._meta = { exportedAt: new Date().toISOString(), version: 1 };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const d = new Date();
+  a.download = `backup_pcpi_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  showToast('Backup exportado ✓');
+}
+
+async function shareBackup() {
+  const data = {};
+  BACKUP_KEYS.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v) data[k] = JSON.parse(v);
+  });
+  data._meta = { exportedAt: new Date().toISOString(), version: 1 };
+  const json = JSON.stringify(data, null, 2);
+  const d = new Date();
+  const fileName = `backup_pcpi_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  if (navigator.share && navigator.canShare) {
+    const blob = new Blob([json], { type: 'application/json' });
+    const file = new File([blob], fileName, { type: 'application/json' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Backup Rotina PCPI' });
+        return;
+      } catch {}
+    }
+  }
+  // Fallback: copiar para área de transferência
+  try {
+    await navigator.clipboard.writeText(json);
+    showToast('JSON copiado para a área de transferência');
+  } catch {
+    showToast('Compartilhamento não disponível neste browser');
+  }
+}
+
+function importBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!confirm('Isso substituirá todos os seus dados atuais pelo backup. Continuar?')) {
+    event.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      let count = 0;
+      BACKUP_KEYS.forEach(k => {
+        if (data[k] !== undefined) {
+          localStorage.setItem(k, JSON.stringify(data[k]));
+          count++;
+        }
+      });
+      showToast(`Backup restaurado — ${count} conjuntos de dados ✓`);
+      loadConfig();
+      loadEntries();
+    } catch {
+      showToast('Arquivo inválido ou corrompido');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
 
 // ── Init ──
 document.getElementById('dateInput').value = todayStr();
